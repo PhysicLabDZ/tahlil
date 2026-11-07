@@ -1,0 +1,18 @@
+{
+  "name": "التحليل الكهربائي — PhysicLabDZ",
+  "short_name": "التحليل الكهربائي",
+  "description": "محاكاة تفاعلية للتحليل الكهربائي لمحاليل SnCl₂ و CuCl₂ و ZnCl₂",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#08202f",
+  "theme_color": "#08202f",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
