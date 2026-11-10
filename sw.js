@@ -1,6 +1,6 @@
 // Service worker — يعمل التطبيق بلا إنترنت بعد أول زيارة.
 // عند أي تعديل على الملفات، غيّر رقم VERSION ليتحدّث الكاش عند المستخدمين.
-const VERSION = 'tahlil-v8';
+const VERSION = 'tahlil-v15';
 const SHELL = [
   './',
   './index.html',
