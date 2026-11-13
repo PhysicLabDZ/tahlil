@@ -1,43 +1,51 @@
-// Service worker — يعمل التطبيق بلا إنترنت بعد أول زيارة.
-// عند أي تعديل على الملفات، غيّر رقم VERSION ليتحدّث الكاش عند المستخدمين.
-const VERSION = 'tahlil-v15';
-const SHELL = [
-  './',
-  './index.html',
-  './manifest.webmanifest',
-  './icon.svg',
-  './icon-192.png',
-  './icon-512.png',
-  './icon-maskable-512.png',
-  './icon-180.png'
+/* PhysicLabDZ – tahlil: offline-first service worker (v16) */
+const CACHE = 'tahlil-v16';
+const REQUIRED = ['./', 'index.html'];
+const OPTIONAL = [
+  'manifest.webmanifest',
+  'icon.svg',
+  'icon-180.png',
+  'icon-192.png',
+  'icon-512.png',
+  'icon-maskable-512.png'
 ];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  e.waitUntil((async () => {
+    const c = await caches.open(CACHE);
+    // الأساسيان إلزاميان: إن فشلا يفشل التنصيب ويُعاد عند الزيارة التالية
+    await c.addAll(REQUIRED.map(u => new Request(u, { cache: 'reload' })));
+    // الباقي اختياري: فشل أي ملف منه لا يمنع التنصيب
+    await Promise.all(OPTIONAL.map(u => c.add(new Request(u, { cache: 'reload' })).catch(() => {})));
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== VERSION).map(k => caches.delete(k))))
+      .then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
 
-// الملفات من الكاش أولًا (سريع وبلا إنترنت) مع تحديثها في الخلفية.
 self.addEventListener('fetch', e => {
-  const req = e.request;
-  if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
-  e.respondWith(
-    caches.match(req, { ignoreSearch: true }).then(hit => {
-      const net = fetch(req).then(res => {
-        if (res && res.ok) {
-          const copy = res.clone();
-          caches.open(VERSION).then(c => c.put(req, copy));
-        }
-        return res;
-      }).catch(() => hit || (req.mode === 'navigate' ? caches.match('./index.html') : undefined));
-      return hit || net;
-    })
-  );
+  const r = e.request;
+  if (r.method !== 'GET' || new URL(r.url).origin !== location.origin) return;
+  e.respondWith((async () => {
+    const c = await caches.open(CACHE);
+    const hit = await c.match(r, { ignoreSearch: true });
+    const net = fetch(r).then(res => {
+      if (res && res.ok) c.put(r, res.clone());
+      return res;
+    }).catch(() => null);
+    if (hit) return hit;
+    const res = await net;
+    if (res) return res;
+    if (r.mode === 'navigate') {
+      const page = await c.match('index.html');
+      if (page) return page;
+    }
+    return new Response('offline', { status: 503 });
+  })());
 });
