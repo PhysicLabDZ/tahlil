@@ -1,5 +1,5 @@
 /* PhysicLabDZ – tahlil: offline-first service worker (v16) */
-const CACHE = 'tahlil-v16';
+const CACHE = 'tahlil-v17';
 const REQUIRED = ['./', 'index.html'];
 const OPTIONAL = [
   'manifest.webmanifest',
